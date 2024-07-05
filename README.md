@@ -1,23 +1,13 @@
-# `ic-gamekit`
+# The ICP GameKit
 
-Welcome to your new `ic-gamekit` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
-
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
-
-To learn more before you start working with `ic-gamekit`, see the following documentation available online:
-
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Motoko Programming Language Guide](https://internetcomputer.org/docs/current/motoko/main/motoko)
-- [Motoko Language Quick Reference](https://internetcomputer.org/docs/current/motoko/main/language-manual)
-
-If you want to start working on your project right away, you might want to try the following commands:
+## Admins
+Only Admins can create games and add achievements. You can add a wallet prinicipal as an admin with:
 
 ```bash
-cd ic-gamekit/
-dfx help
-dfx canister --help
+# Adds a new Admin
+dfx canister call ic-gamekit-backend addAdmin '(principal "xif56-fwv52-wrbvc-q3rcp-lsiiw-nfhwg-tvcob-lmd5a-zsfhc-muqtu-xqe")'
 ```
+The deploying identity automatically becomes an Admin.
 
 ## Running the project locally
 
@@ -48,6 +38,22 @@ npm start
 ```
 
 Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+
+
+# Testing
+You will need to run the following command to add the test Admin user before running the tests.
+
+```bash
+# Adds a test Admin
+dfx canister call ic-gamekit-backend addAdmin '(principal "rwbxt-jvr66-qvpbz-2kbh3-u226q-w6djk-b45cp-66ewo-tpvng-thbkh-wae")'
+```
+Then run the tests with:
+```bash
+# Runs test
+npm run test
+```
+
+
 
 ### Note on frontend environment variables
 

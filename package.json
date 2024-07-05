@@ -9,10 +9,15 @@
     "prebuild": "npm run prebuild --workspaces --if-present",
     "pretest": "npm run prebuild --workspaces --if-present",
     "start": "npm start --workspaces --if-present",
-    "test": "npm test --workspaces --if-present"
+    "test": "vitest"
   },
   "type": "module",
   "workspaces": [
     "src/ic-gamekit-frontend"
-  ]
+  ],
+  "devDependencies": {
+    "@dfinity/identity-secp256k1": "^1.4.0",
+    "isomorphic-fetch": "^3.0.0",
+    "vitest": "^1.6.0"
+  }
 }
