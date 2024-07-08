@@ -1,5 +1,12 @@
 {
   "canisters": {
+    "clicker-game": {
+      "dependencies": [
+        "ic-gamekit-backend"
+      ],
+      "main": "src/clicker-game/clickergame.mo",
+      "type": "motoko"
+    },
     "ic-gamekit-backend": {
       "main": "src/ic-gamekit-backend/main.mo",
       "type": "motoko"

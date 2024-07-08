@@ -1,4 +1,4 @@
-# The ICP GameKit
+# The IC GameKit
 
 ## Admins
 Only Admins can create games and add achievements. You can add a wallet prinicipal as an admin with:

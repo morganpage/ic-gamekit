@@ -216,7 +216,7 @@ shared ({caller}) actor class ICPGameKit() {
   // PLAYERACHIEVEMENT //
   ///////////////
 
-  public shared ({ caller }) func incrementPlayerAchievement(achievementName : Text) : async Result<PlayerAchievement,Text> {
+  public shared ({ caller }) func incrementPlayerAchievement(achievementName : Text, playerId : Text) : async Result<PlayerAchievement,Text> {
     let existingAchievement : ?Achievement = Trie.find(achievements, key(achievementName), Text.equal);
     var maxProgress : Nat = 0;
     switch (existingAchievement){
@@ -230,7 +230,7 @@ shared ({caller}) actor class ICPGameKit() {
         return #err("Achievement does not exist!");
       };
     };
-    let playerAchievementId = Principal.toText(caller) # "_" # achievementName;
+    let playerAchievementId = playerId # "_" # achievementName;
     let existingPlayerAchievement : ?PlayerAchievement = Trie.find(playerAchievements, key(playerAchievementId), Text.equal);
     switch (existingPlayerAchievement){
       case (?v) {
@@ -241,7 +241,7 @@ shared ({caller}) actor class ICPGameKit() {
           return #err("Progress exceeds max progress!");
         };
         let playerAchievement : PlayerAchievement = { id = playerAchievementId;
-                                                      player = Principal.toText(caller);
+                                                      player = playerId;
                                                       achievementName;
                                                       progress = v.progress + 1;
                                                       updated = Time.now();
@@ -252,7 +252,7 @@ shared ({caller}) actor class ICPGameKit() {
       };
       case (_) {
         let playerAchievement : PlayerAchievement = { id = playerAchievementId;
-                                                      player = Principal.toText(caller);
+                                                      player = playerId;
                                                       achievementName;
                                                       progress = 1;
                                                       updated = Time.now();
@@ -264,9 +264,9 @@ shared ({caller}) actor class ICPGameKit() {
     };
   };
 
-  //List all the playerachievements for the caller
-  public query ({ caller }) func listMyPlayerAchievements() : async Result<[PlayerAchievement],Text> {
-    let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == Principal.toText(caller) } );
+  //List all the playerachievements for the specified playerId
+  public query ({ caller }) func listMyPlayerAchievements(playerId : Text) : async Result<[PlayerAchievement],Text> {
+    let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId } );
     return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
   };
 
@@ -290,14 +290,27 @@ shared ({caller}) actor class ICPGameKit() {
     };
 
 
-    // let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == Principal.toText(caller) } );
+    // let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId } );
     // return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
+  };
+
+  //Delete all player achievements - mostly for testing purposes
+  public shared ({ caller }) func deleteAllPlayerAchievements() : async Result<(),Text> {
+    if(_isAdmin(caller) == false){
+      return #err("You are not an admin!");
+    };
+    playerAchievements := Trie.empty();
+    return #ok();
   };
 
   /////////////////
   // ADMIN //
   ///////////////
   public query ({ caller }) func whoAmI() : async Principal {
+		return caller;
+	};
+
+  public shared ({ caller }) func whoAmIFunc() : async Principal {
 		return caller;
 	};
 
@@ -320,14 +333,8 @@ shared ({caller}) actor class ICPGameKit() {
   };
 
   public query({caller}) func listAdmins() : async [Principal] {
-    //isAdmin(caller);
     List.toArray(admins);
   };
-
-  //List all the admins
-  // public query ({ caller }) func listAdmins() : async [Principal] {
-  //   return admins;
-  // };
 
 
 };
