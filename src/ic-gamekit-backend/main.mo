@@ -217,20 +217,25 @@ shared ({caller}) actor class ICPGameKit() {
   ///////////////
 
   public shared ({ caller }) func incrementPlayerAchievement(achievementName : Text, playerId : Text) : async Result<PlayerAchievement,Text> {
+    if(_isAdmin(caller) == false){
+      return #err("You are not an admin!");
+    };
     let existingAchievement : ?Achievement = Trie.find(achievements, key(achievementName), Text.equal);
     var maxProgress : Nat = 0;
+    var gameName : Text = "";
     switch (existingAchievement){
       case (?v) {
         if(v.hidden == true){
           return #err("Achievement is hidden!");
         };
         maxProgress := v.maxProgress;
+        gameName := v.gameName;
       };
       case (_) {
         return #err("Achievement does not exist!");
       };
     };
-    let playerAchievementId = playerId # "_" # achievementName;
+    let playerAchievementId = playerId # "_" # gameName # "_" # achievementName;
     let existingPlayerAchievement : ?PlayerAchievement = Trie.find(playerAchievements, key(playerAchievementId), Text.equal);
     switch (existingPlayerAchievement){
       case (?v) {
@@ -243,6 +248,7 @@ shared ({caller}) actor class ICPGameKit() {
         let playerAchievement : PlayerAchievement = { id = playerAchievementId;
                                                       player = playerId;
                                                       achievementName;
+                                                      gameName;
                                                       progress = v.progress + 1;
                                                       updated = Time.now();
                                                       earned = v.progress + 1 >= maxProgress;
@@ -254,6 +260,7 @@ shared ({caller}) actor class ICPGameKit() {
         let playerAchievement : PlayerAchievement = { id = playerAchievementId;
                                                       player = playerId;
                                                       achievementName;
+                                                      gameName;
                                                       progress = 1;
                                                       updated = Time.now();
                                                       earned = 1 >= maxProgress;
@@ -264,11 +271,21 @@ shared ({caller}) actor class ICPGameKit() {
     };
   };
 
-  //List all the playerachievements for the specified playerId
-  public query ({ caller }) func listMyPlayerAchievements(playerId : Text) : async Result<[PlayerAchievement],Text> {
-    let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId } );
+  //List all the playerachievements for the specified playerId, gameName and whether we want to see earned or non-earned achievements
+  public query ({ caller }) func listMyPlayerAchievements(playerId : Text, gameName : Text, earned : Bool) : async Result<[PlayerAchievement],Text> {
+    if(_isAdmin(caller) == false){
+      return #err("You are not an admin!");
+    };
+    let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId and v.gameName == gameName and v.earned == earned } );
     return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
   };
+
+  public query ({ caller }) func listMyPlayerAchievements2(playerId : Text, gameName : Text, earned : Bool) : async [PlayerAchievement] {
+    let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId and v.gameName == gameName and v.earned == earned } );
+    return (Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
+  };
+
+
 
   //List all the playerachievements for this achievement if you are an admin
   public query ({ caller }) func listPlayerAchievements(achievementName : Text) : async Result<[PlayerAchievement],Text> {

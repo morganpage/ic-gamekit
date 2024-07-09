@@ -26,25 +26,32 @@ test("should be able to add a game if an admin", async () => {
 
 test("should be able to add an achievement if creator", async () => {
   const result1 = await adminActor.createAchievement("Test Game", "Test Achievement", "Test Achievement Description", 1, false, false);
-  console.log(result1);
+  //console.log(result1);
   expect(result1.ok.name).toBe("Test Achievement");
 });
 
 test("should be able to list achievements", async () => {
   const result1 = await adminActor.listAchievements("Test Game");
-  console.log(result1);
+  //console.log(result1);
   expect(result1.ok.length).toBe(1);
 });
 
 test("should be able to list achievements with details", async () => {
   const result1 = await adminActor.listAchievementsWithDetails("Test Game");
-  console.log(result1);
+  //console.log(result1);
   expect(result1.ok.length).toBe(1);
 });
 
 test("should be able to increment a player achievement", async () => {
+  //First delete any existing player achievements
+  const result2 = await adminActor.deleteAllPlayerAchievements();
   const result1 = await adminActor.incrementPlayerAchievement("Test Achievement", "Player1");
-  console.log(result1);
-  expect(result1.ok.progress).toBe(1);
+  //console.log(result1);
+  expect(result1.ok.progress).toBe(1n);
 });
 
+test("should be able to list player achievements", async () => {
+  const result1 = await adminActor.listMyPlayerAchievements("Player1","Test Game",true);
+  //console.log(result1);
+  expect(result1.ok.length).toBe(1);
+});

@@ -28,9 +28,10 @@ module {
 
 
   public type PlayerAchievement = {
-    id : Text; // The id of the player achievement mix of player principal and achievement name
+    id : Text; // The id of the player achievement mix of player principal, game name and achievement name
     achievementName : Text; // The name of the achievement
     player : Text; // The player who has the achievement
+    gameName : Text; // The name of the game the achievement belongs to
     progress : Nat; // The progress of the achievement
     updated : Time.Time; // The time the playerachievement was updated
     earned : Bool; // Whether the playerachievement has been earned or not
