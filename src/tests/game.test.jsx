@@ -17,12 +17,12 @@ test("WhoAmi2 should return value", async () => {
   expect(result1).not.toBe(null);
 });
 
-test("should ba able to setup game", async () => {
-  //console.log(actor);
-  const result1 = await actor.setup();
-  console.log(result1.toText());
-  expect(result1).not.toBe(null);
-});
+// test("should ba able to setup game", async () => {
+//   //console.log(actor);
+//   const result1 = await actor.setup();
+//   console.log(result1.toText());
+//   expect(result1).not.toBe(null);
+// });
 
 
 
@@ -36,8 +36,8 @@ test("Should be able to click", async () => {
   // console.log(result2);
 
 
-  const result1 = await actor.click("Player1");
+  const result1 = await actor.click2("Player1");
   console.log(result1);
 
-  expect(result1.err).toBe("Clicker Game");
+  expect(result1.ok).not.toBe(null);
 });

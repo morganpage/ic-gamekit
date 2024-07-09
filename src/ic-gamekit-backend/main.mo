@@ -94,8 +94,8 @@ shared ({caller}) actor class ICPGameKit() {
 
   public query ({ caller }) func listGames() : async [Game] {
     //let result = Iter.toArray(Trie.iter(games));
-    let trieOfOwnGames = Trie.filter<Text, Game>(games, func (k, v) { v.creator == caller } );
-    return Iter.toArray(Iter.map(Trie.iter(trieOfOwnGames), func (kv : (Text, Game)) : Game = kv.1))
+    //let trieOfOwnGames = Trie.filter<Text, Game>(games, func (k, v) { v.creator == caller } );
+    return Iter.toArray(Iter.map(Trie.iter(games), func (kv : (Text, Game)) : Game = kv.1))
   };
 
   /////////////////
@@ -216,7 +216,7 @@ shared ({caller}) actor class ICPGameKit() {
   // PLAYERACHIEVEMENT //
   ///////////////
 
-  public shared ({ caller }) func incrementPlayerAchievement(achievementName : Text, playerId : Text) : async Result<PlayerAchievement,Text> {
+  public shared ({ caller }) func incrementPlayerAchievement(achievementName : Text, playerId : Text,increment : Nat) : async Result<PlayerAchievement,Text> {
     if(_isAdmin(caller) == false){
       return #err("You are not an admin!");
     };
@@ -249,9 +249,9 @@ shared ({caller}) actor class ICPGameKit() {
                                                       player = playerId;
                                                       achievementName;
                                                       gameName;
-                                                      progress = v.progress + 1;
+                                                      progress = v.progress + increment;
                                                       updated = Time.now();
-                                                      earned = v.progress + 1 >= maxProgress;
+                                                      earned = v.progress + increment >= maxProgress;
                                                       };
         playerAchievements := Trie.replace(playerAchievements, key(playerAchievementId), Text.equal, ?playerAchievement).0;
         return #ok(playerAchievement);
@@ -261,9 +261,9 @@ shared ({caller}) actor class ICPGameKit() {
                                                       player = playerId;
                                                       achievementName;
                                                       gameName;
-                                                      progress = 1;
+                                                      progress = increment;
                                                       updated = Time.now();
-                                                      earned = 1 >= maxProgress;
+                                                      earned = increment >= maxProgress;
                                                       };
         playerAchievements := Trie.replace(playerAchievements, key(playerAchievementId), Text.equal, ?playerAchievement).0;
         return #ok(playerAchievement);

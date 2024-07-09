@@ -45,7 +45,7 @@ test("should be able to list achievements with details", async () => {
 test("should be able to increment a player achievement", async () => {
   //First delete any existing player achievements
   const result2 = await adminActor.deleteAllPlayerAchievements();
-  const result1 = await adminActor.incrementPlayerAchievement("Test Achievement", "Player1");
+  const result1 = await adminActor.incrementPlayerAchievement("Test Achievement", "Player1",1);
   //console.log(result1);
   expect(result1.ok.progress).toBe(1n);
 });
