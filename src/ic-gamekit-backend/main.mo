@@ -23,78 +23,35 @@ shared ({caller}) actor class ICPGameKit() {
   private stable var playerAchievements : Trie<Text, PlayerAchievement> = Trie.empty();
   private stable var admins : List<Principal> = ?(caller, null);
 
-  public query func greet(name : Text) : async Text {
-    return "Hello, " # name # "!";
-  };
-
-  //Show principal of caller
-  public shared({caller}) func showCaller() : async Text {
-    return "Caller: " # Principal.toText(caller);
-  };
-
   /////////////////
   // GAME //
   ///////////////
   public shared ({ caller }) func createGame(name : Text,description : Text) : async Result<Game,Text> {
-    if(_isAdmin(caller) == false){
-      //Display error message and calling principal
-      return #err("You are not an admin! - " # Principal.toText(caller));
-    };
-    // Check if the game already exists
-    let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
-    var a : List<Text> = List.nil();
-    switch (existingGame){
-      case (?v) {
-        if(v.creator != caller){
-          return #err("Game already exists and you are not the creator!");
-        };
-        a := v.achievements;
-      };
-      case (_) {};
-    };
-    let game : Game = { name = name; description = description; creator = caller; created = Time.now(); achievements = a;};
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let game : Game = { name = name; description = description; creator = caller; created = Time.now(); };
     games := Trie.replace(games, key(name), Text.equal, ?game).0;
     return #ok(game);
   };
 
-  func _updateGame(game : Game) : () {
-    games := Trie.replace(games, key(game.name), Text.equal, ?game).0;
-  };
-
   public query func getGame(name : Text) : async ?Game {
+    if(_isAdmin(caller) == false){return null;};
     let result = Trie.find(games, key(name), Text.equal);
     return result;
   };
 
   public shared ({ caller }) func deleteGame(name : Text) : async Result<(),Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
     switch (existingGame){
       case (?v) {
-        if(v.creator != caller){
-          return #err("Game already exists and you are not the creator!");
-        } else {
-          games := Trie.replace(games, key(name), Text.equal, null).0;
-          // if(List.size(v.achievements) > 0){
-          //   return #err("Game has achievements, delete them first!");
-          // } else {
-          //   games := Trie.replace(games, key(name), Text.equal, null).0;
-          // };
-        }
+        games := Trie.replace(games, key(name), Text.equal, null).0;
       };
       case (_) {};
     };
     return #ok();
   };
-  //List all games
-  // public query ({ caller }) func listGames() : async [(Text,Game)] {
-  //   //let result = Iter.toArray(Trie.iter(games));
-  //   let trieOfOwnGames = Trie.filter<Text, Game>(games, func (k, v) { v.creator == caller } );
-  //   return Iter.toArray(Trie.iter(trieOfOwnGames));
-  // };
 
   public query ({ caller }) func listGames() : async [Game] {
-    //let result = Iter.toArray(Trie.iter(games));
-    //let trieOfOwnGames = Trie.filter<Text, Game>(games, func (k, v) { v.creator == caller } );
     return Iter.toArray(Iter.map(Trie.iter(games), func (kv : (Text, Game)) : Game = kv.1))
   };
 
@@ -103,13 +60,10 @@ shared ({caller}) actor class ICPGameKit() {
   ///////////////
 
   public shared ({ caller }) func createAchievement(gameName : Text, name : Text, description : Text,maxProgress : Nat, secret : Bool, hidden : Bool) : async Result<Achievement,Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingGame : ?Game = Trie.find(games, key(gameName), Text.equal);
     switch (existingGame){
       case (?v) {
-        if(v.creator != caller){
-          return #err("You are not the creator of the game!");
-        };
-        //Add the achievement to the game
         let achievement : Achievement = { name = name;
                                           created = Time.now();
                                           description = description;
@@ -119,13 +73,6 @@ shared ({caller}) actor class ICPGameKit() {
                                           hidden;
                                           };
         achievements := Trie.replace(achievements, key(name), Text.equal, ?achievement).0;
-        //Only add the achievement to the game if it does not already exist
-        if(List.find(v.achievements, func (x : Text) : Bool = x == name ) == null){
-          let updatedGame : Game = { name = v.name; description = v.description; creator = v.creator; created = v.created; achievements = List.push(name,v.achievements);};
-          _updateGame(updatedGame);
-        };
-        // let updatedGame : Game = { name = v.name; description = v.description; creator = v.creator; created = v.created; achievements = List.push(name,v.achievements);};
-        // _updateGame(updatedGame);
         return #ok(achievement);
       };
       case (_) {
@@ -135,41 +82,19 @@ shared ({caller}) actor class ICPGameKit() {
   };
 
   public query func getAchievement(name : Text) : async ?Achievement {
+    if(_isAdmin(caller) == false){return null;};
     let result = Trie.find(achievements, key(name), Text.equal);
     return result;
   };
 
   //List all achievements for a game
-  public query ({ caller }) func listAchievements(gameName : Text) : async Result<[Text],Text> {
+  public query ({ caller }) func listAchievements(gameName : Text) : async Result<[Achievement],Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingGame : ?Game = Trie.find(games, key(gameName), Text.equal);
     switch (existingGame){
       case (?v) {
-        if(_isAdmin(caller) == true){
-          return #ok(List.toArray(v.achievements));//Admins see all achievements
-        } else {
-          let visibleAchievements = Trie.filter<Text, Achievement>(achievements, func (k, v) { v.secret == false and v.hidden == false and v.gameName == gameName } );
-          return #ok(Iter.toArray(Iter.map(Trie.iter(visibleAchievements), func (kv : (Text, Achievement)) : Text = kv.1.name)));
-        };
-      };
-      case (_) {
-        return #err("Game does not exist!");
-      };
-    };
-  };
-
-  //List all achievements for a game
-  public query ({ caller }) func listAchievementsWithDetails(gameName : Text) : async Result<[Achievement],Text> {
-    let existingGame : ?Game = Trie.find(games, key(gameName), Text.equal);
-    switch (existingGame){
-      case (?v) {
-        if(_isAdmin(caller) == true){
-          let allAchievements = Trie.filter<Text, Achievement>(achievements, func (k, v) { v.gameName == gameName } );
-          return #ok(Iter.toArray(Iter.map(Trie.iter(allAchievements), func (kv : (Text, Achievement)) : Achievement = kv.1)));
-        } else {
-          let visibleAchievements = Trie.filter<Text, Achievement>(achievements, func (k, v) { v.secret == false and v.hidden == false and v.gameName == gameName } );
-          //return #ok(Iter.toArray(Iter.map(Trie.iter(visibleAchievements), func (kv : (Text, Achievement)) : Achi = kv.1.name)));
-          return #ok(Iter.toArray(Iter.map(Trie.iter(visibleAchievements), func (kv : (Text, Achievement)) : Achievement = kv.1)));
-        };
+        let allAchievements = Trie.filter<Text, Achievement>(achievements, func (k, v) { v.gameName == gameName } );
+        return #ok(Iter.toArray(Iter.map(Trie.iter(allAchievements), func (kv : (Text, Achievement)) : Achievement = kv.1)));
       };
       case (_) {
         return #err("Game does not exist!");
@@ -178,21 +103,10 @@ shared ({caller}) actor class ICPGameKit() {
   };
 
   public shared ({ caller }) func deleteAchievement(achievementName : Text) : async Result<(),Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingAchievement : ?Achievement = Trie.find(achievements, key(achievementName), Text.equal);
     switch (existingAchievement){
       case (?v) {
-        if(_isCreatorOfGame(caller, v.gameName) == false){
-          return #err("You are not the creator of the game!");
-        };
-        //Remove the achievement from the game
-        let existingGame : ?Game = Trie.find(games, key(v.gameName), Text.equal);
-        switch (existingGame){
-          case (?game) {
-            let updatedGame : Game = { name = game.name; description = game.description; creator = game.creator; created = game.created; achievements = List.filter(game.achievements, func (x : Text) : Bool = x != achievementName);};
-            _updateGame(updatedGame);
-          };
-          case (_) {};
-        };
         achievements := Trie.replace(achievements, key(achievementName), Text.equal, null).0;
       };
       case (_) {};
@@ -200,26 +114,12 @@ shared ({caller}) actor class ICPGameKit() {
     return #ok();
   };
 
-  func _isCreatorOfGame(caller : Principal, gameName : Text) : Bool {
-    let existingGame : ?Game = Trie.find(games, key(gameName), Text.equal);
-    switch (existingGame){
-      case (?v) {
-        return v.creator == caller;
-      };
-      case (_) {
-        return false;
-      };
-    };
-  };
-
   /////////////////
   // PLAYERACHIEVEMENT //
   ///////////////
 
   public shared ({ caller }) func incrementPlayerAchievement(achievementName : Text, playerId : Text,increment : Nat) : async Result<PlayerAchievement,Text> {
-    if(_isAdmin(caller) == false){
-      return #err("You are not an admin!");
-    };
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingAchievement : ?Achievement = Trie.find(achievements, key(achievementName), Text.equal);
     var maxProgress : Nat = 0;
     var gameName : Text = "";
@@ -273,31 +173,20 @@ shared ({caller}) actor class ICPGameKit() {
 
   //List all the playerachievements for the specified playerId, gameName and whether we want to see earned or non-earned achievements
   public query ({ caller }) func listMyPlayerAchievements(playerId : Text, gameName : Text, earned : Bool) : async Result<[PlayerAchievement],Text> {
-    if(_isAdmin(caller) == false){
-      return #err("You are not an admin!");
-    };
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId and v.gameName == gameName and v.earned == earned } );
     return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
   };
 
-  // public query ({ caller }) func listMyPlayerAchievements2(playerId : Text, gameName : Text, earned : Bool) : async [PlayerAchievement] {
-  //   let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId and v.gameName == gameName and v.earned == earned } );
-  //   return (Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
-  // };
-
-
-
   //List all the playerachievements for this achievement if you are an admin
   public query ({ caller }) func listPlayerAchievements(achievementName : Text) : async Result<[PlayerAchievement],Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingAchievement : ?Achievement = Trie.find(achievements, key(achievementName), Text.equal);
     switch (existingAchievement){
       case (?v) {
         if(_isAdmin(caller) == false){
           return #err("You are not an admin!");
         };
-        // if(_isCreatorOfGame(caller, v.gameName) == false){
-        //   return #err("You are not the creator of the game!");
-        // };
         let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.achievementName == achievementName } );
         return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
       };
@@ -305,17 +194,11 @@ shared ({caller}) actor class ICPGameKit() {
         return #err("Achievement does not exist!");
       };
     };
-
-
-    // let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId } );
-    // return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
   };
 
   //Delete all player achievements - mostly for testing purposes
   public shared ({ caller }) func deleteAllPlayerAchievements() : async Result<(),Text> {
-    if(_isAdmin(caller) == false){
-      return #err("You are not an admin!");
-    };
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     playerAchievements := Trie.empty();
     return #ok();
   };

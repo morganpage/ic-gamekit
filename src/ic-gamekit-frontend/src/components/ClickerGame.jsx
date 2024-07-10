@@ -19,7 +19,6 @@ export function ClickerGame() {
       setPlayerId(principal.toString());
     });
     actor.getClicks().then((clicks) => {
-      console.log(clicks);
       setClickCount(parseInt(clicks));
     });
   }, [actor]);
@@ -43,13 +42,12 @@ export function ClickerGame() {
 
   const refreshPlayerAchievements = async () => {
     if (!actor) return;
-    actor.getPlayerAchievements().then((a) => {
-      console.log(a);
-      if(a.err){
-        alert(a.err);
+    actor.getPlayerAchievements().then((achievements) => {
+      if(achievements.err){
+        alert(achievements.err);
         return;
       }
-      setPlayerAchievements(a.ok);
+      setPlayerAchievements(achievements.ok);
     });
   }
 
@@ -64,8 +62,8 @@ export function ClickerGame() {
       </form>
       <h4>Unlocked Achievements</h4>
       {playerAchievements?.map((achievement, index) => (
-        <div key={index} className="row">
-          <div className="namedesc">
+        <div key={index} >
+          <div>
             <p>{achievement.achievementName}</p>
           </div>
         </div>

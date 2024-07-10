@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useActor } from "../ic/Actors";
 
-export function AchievementAdd({ game }) {
+export function AchievementAdd({ game, onGameChange}) {
   const { actor } = useActor();
 
   const createAchievement = async (e) => {
@@ -10,6 +10,7 @@ export function AchievementAdd({ game }) {
     const description = e.target.elements.description.value;
     actor.createAchievement(game.name,name,description,1,false,false).then((achievement) => {
       console.log(achievement);
+      onGameChange(achievement.ok.gameName);
     });
     e.target.reset();
   };

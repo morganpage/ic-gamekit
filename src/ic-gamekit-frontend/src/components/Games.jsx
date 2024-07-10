@@ -8,7 +8,6 @@ export function Games({ game, onGameChange }) {
   useEffect(() => {
     if (!actor) return;
     actor.listGames().then((games) => {
-      console.log(games);
       setGames(games);
       if(games.length > 0) onGameChange(games[0]);
     }
@@ -27,7 +26,6 @@ export function Games({ game, onGameChange }) {
   };
 
   const onSelectChange = (gameName) => {
-    console.log(gameName);
     const game = games.find((a) => a.name === gameName);
     onGameChange(game);
   }

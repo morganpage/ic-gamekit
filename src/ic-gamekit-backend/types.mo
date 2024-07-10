@@ -13,7 +13,6 @@ module {
     creator : Principal; // The member who created the game
     created : Time.Time; // The time the game was created
     description : Text; // The description of the game
-    achievements : List<Text>; // The achievements of the game
   };
 
   public type Achievement = {
