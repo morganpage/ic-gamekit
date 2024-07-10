@@ -24,7 +24,7 @@ export function AchievementAdd({ game, onGameChange}) {
           <input type="text" id="description" placeholder="Achievement Description" style={{minWidth:"180px"}} />
           <button type="submit">+</button>
       </form>
-      </div>
+    </div>
     </>
   );
 }

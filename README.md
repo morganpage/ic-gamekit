@@ -5,7 +5,7 @@ Only Admins can create games and add achievements. You can add a wallet prinicip
 
 ```bash
 # Adds a new Admin
-dfx canister call ic-gamekit-backend addAdmin '(principal "xif56-fwv52-wrbvc-q3rcp-lsiiw-nfhwg-tvcob-lmd5a-zsfhc-muqtu-xqe")'
+dfx canister call ic-gamekit-backend addAdmin '(principal "27r6c-tnwx3-huyu5-panzd-njv6m-hvilt-ktcqz-d6zbv-kvozi-osfwu-hqe")'
 ```
 The deploying identity automatically becomes an Admin.
 
