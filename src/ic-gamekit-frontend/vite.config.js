@@ -7,6 +7,11 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
+process.env.II_URL =
+  process.env.DFX_NETWORK === "local"
+    ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/`
+    : `https://identity.ic0.app`;
+
 export default defineConfig({
   build: {
     emptyOutDir: true,
@@ -30,6 +35,7 @@ export default defineConfig({
     react(),
     environment("all", { prefix: "CANISTER_" }),
     environment("all", { prefix: "DFX_" }),
+    environment(["II_URL"]),
   ],
   test: {
     environment: 'jsdom',

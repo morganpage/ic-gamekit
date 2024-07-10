@@ -19,5 +19,9 @@
     "@dfinity/identity-secp256k1": "^1.4.0",
     "isomorphic-fetch": "^3.0.0",
     "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "ic-use-actor": "^0.0.9",
+    "ic-use-internet-identity": "^0.0.10"
   }
 }

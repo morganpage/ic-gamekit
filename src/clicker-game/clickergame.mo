@@ -15,12 +15,11 @@ actor class ClickerGame() {
   let gameDescription : Text = "A simple clicker game";
   var isSetup : Bool = false;
 
-  public query ({ caller }) func whoAmI() : async Principal {
+  public query ({ caller }) func playerPrincipal() : async Principal {
 		return caller;
 	};
 
-  // Call ICGameKitCanister whoAmI
-  public shared ({ caller = _ }) func whoAmI2() : async Principal {
+  public shared ({ caller = _ }) func gameCanisterPrincipal() : async Principal {
     return await ICGameKitCanister.whoAmIFunc();
   };
 
@@ -34,7 +33,8 @@ actor class ClickerGame() {
     let _achievement5 = await ICGameKitCanister.createAchievement(gameName,"Click Counter","Click Counter", 1000000, true, false);
   };
 
-  public shared ({ caller }) func click2(playerId : Text) : async Result<PlayerAchievement,Text> {
+  public shared ({ caller }) func click() : async Result<PlayerAchievement,Text> {
+    let playerId = Principal.toText(caller);
     //isSetup := false;
     if(isSetup == false){
       await setup();
@@ -63,6 +63,33 @@ actor class ClickerGame() {
       };
     };
   };
+
+  // Get Current number of clicks - held in Click Counter achievement
+  public shared ({ caller }) func getClicks() : async Nat {
+    let playerId = Principal.toText(caller);
+    let playerAchievements = await ICGameKitCanister.listMyPlayerAchievements(playerId,gameName,false);
+    switch (playerAchievements) {
+      case (#ok(playerAchievements)) {
+        for (playerAchievement in playerAchievements.vals()) {
+          if(playerAchievement.achievementName == "Click Counter"){
+            return playerAchievement.progress;
+          };
+        };
+        return 0;
+      };
+      case (#err(_)) {
+        return 0;
+      };
+    };
+  };
+
+  public shared ({ caller }) func getPlayerAchievements() : async Result<[PlayerAchievement],Text> {
+    let playerId = Principal.toText(caller);
+    let playerAchievements = await ICGameKitCanister.listMyPlayerAchievements(playerId,gameName,true);
+    return playerAchievements;
+  };
+
+
 
 
   // public shared ({ caller }) func click(playerId : Text) : async Result<PlayerAchievement,Text> {
@@ -101,34 +128,34 @@ actor class ClickerGame() {
   //   return #err("Clicker Game");
   // };
 
-  private func findCurrentAchievement(playerId : Text) : async ?Text {
-    let playerAchievementsUnearned = await ICGameKitCanister.listMyPlayerAchievements2(playerId,gameName,false);
-    if(playerAchievementsUnearned.size() == 0){
-      //No unearned achievements found, so find the highest earned achievement
-      let playerAchievementsEarned = await ICGameKitCanister.listMyPlayerAchievements2(playerId,gameName,true);
-      if(playerAchievementsEarned.size() == 0){
-        //No achievements found at all, so must be first click
-        return null;
-      } else {
-        //We have an earned achievement, so return the highest one
-        let highestEarned = findHighestEarned(playerAchievementsEarned);
-        //Filter out any achievements that are
-        return ?Nat.toText(highestEarned);
-      };
-    } else {
-      //We have an unearned achievement, so return it, should only be one at a time
-      return ?playerAchievementsUnearned[0].achievementName;
-    }
-  };
+  // private func findCurrentAchievement(playerId : Text) : async ?Text {
+  //   let playerAchievementsUnearned = await ICGameKitCanister.listMyPlayerAchievements2(playerId,gameName,false);
+  //   if(playerAchievementsUnearned.size() == 0){
+  //     //No unearned achievements found, so find the highest earned achievement
+  //     let playerAchievementsEarned = await ICGameKitCanister.listMyPlayerAchievements2(playerId,gameName,true);
+  //     if(playerAchievementsEarned.size() == 0){
+  //       //No achievements found at all, so must be first click
+  //       return null;
+  //     } else {
+  //       //We have an earned achievement, so return the highest one
+  //       let highestEarned = findHighestEarned(playerAchievementsEarned);
+  //       //Filter out any achievements that are
+  //       return ?Nat.toText(highestEarned);
+  //     };
+  //   } else {
+  //     //We have an unearned achievement, so return it, should only be one at a time
+  //     return ?playerAchievementsUnearned[0].achievementName;
+  //   }
+  // };
 
 
-  private func findHighestEarned(playerAchievements : [PlayerAchievement]) : Nat {
-    func order (a: PlayerAchievement, b: PlayerAchievement) : Order.Order {
-            return Nat.compare(b.progress, a.progress);
-    };
-    let sorted = Array.sort(playerAchievements, order);
-    return sorted[0].progress;
-  };
+  // private func findHighestEarned(playerAchievements : [PlayerAchievement]) : Nat {
+  //   func order (a: PlayerAchievement, b: PlayerAchievement) : Order.Order {
+  //           return Nat.compare(b.progress, a.progress);
+  //   };
+  //   let sorted = Array.sort(playerAchievements, order);
+  //   return sorted[0].progress;
+  // };
 
   // private func findHighestEarned(playerId : Text) : async Nat {
   //   let playerAchievementsEarned = await ICGameKitCanister.listMyPlayerAchievements2(playerId,gameName,true);

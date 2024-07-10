@@ -280,10 +280,10 @@ shared ({caller}) actor class ICPGameKit() {
     return #ok(Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
   };
 
-  public query ({ caller }) func listMyPlayerAchievements2(playerId : Text, gameName : Text, earned : Bool) : async [PlayerAchievement] {
-    let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId and v.gameName == gameName and v.earned == earned } );
-    return (Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
-  };
+  // public query ({ caller }) func listMyPlayerAchievements2(playerId : Text, gameName : Text, earned : Bool) : async [PlayerAchievement] {
+  //   let trieOfOwnPlayerAchievements = Trie.filter<Text, PlayerAchievement>(playerAchievements, func (k, v) { v.player == playerId and v.gameName == gameName and v.earned == earned } );
+  //   return (Iter.toArray(Iter.map(Trie.iter(trieOfOwnPlayerAchievements), func (kv : (Text, PlayerAchievement)) : PlayerAchievement = kv.1)));
+  // };
 
 
 

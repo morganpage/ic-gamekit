@@ -13,7 +13,7 @@ import { canisterId, createActor } from "../declarations/clicker-game/index.js";
 
 
 const HOST = "http://127.0.0.1:4943";
-const gameCanister = canisterId ?? canisterIds["clicker-game"].local;
+export const gameCanister = canisterId ?? canisterIds["clicker-game"].local;
 
 export const actor = await createActor(gameCanister, {
   agentOptions: { host: HOST, fetch },
@@ -35,7 +35,7 @@ export const actor = await createActor(gameCanister, {
 //   agentOptions: { host: HOST, fetch },
 // });
 
-export const backendCanister = canisterId ?? canisterIds["ic-gamekit-backend"].local;
+//export const backendCanister = canisterId ?? canisterIds["ic-gamekit-backend"].local;
 // // Completely insecure seed phrase. Do not use for any purpose other than testing.
 // // Resolves to "rwbxt-jvr66-qvpbz-2kbh3-u226q-w6djk-b45cp-66ewo-tpvng-thbkh-wae"
 // const seed = "test test test test test test test test test test test test";

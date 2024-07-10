@@ -3,6 +3,14 @@ body {
   font-size: 1.5rem;
 }
 
+h1,h2,h3,h4,h5,h6 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
 img {
   max-width: 50vw;
   max-height: 25vw;
@@ -10,28 +18,60 @@ img {
   margin: auto;
 }
 
+button[type="submit"] {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 0px 5px;
+}
+
+.panelCard {
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  padding: 10px;
+  margin: 10px;
+}
+
+.panelCard h4 {
+  margin-bottom: 10px;
+}
+
+.deleteButton {
+  background-color: red;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 5px;
+}
+
+td:first-child {
+  font-weight: bold;
+}
+th {
+  text-align: left;
+}
+td,th {
+  padding: 0 2px;
+}
+
 form {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px;
+}
+
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.namedesc {
+  display: flex;
   gap: 0.5em;
-  flex-flow: row wrap;
-  max-width: 40vw;
-  margin: auto;
-  align-items: baseline;
-}
-
-button[type="submit"] {
-  padding: 5px 20px;
-  margin: 10px auto;
-  float: right;
-}
-
-#greeting {
-  margin: 10px auto;
-  padding: 10px 60px;
-  border: 1px solid #222;
-}
-
-#greeting:empty {
-  display: none;
 }
