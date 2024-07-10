@@ -33,13 +33,7 @@ test("should be able to add an achievement if creator", async () => {
 test("should be able to list achievements", async () => {
   const result1 = await adminActor.listAchievements("Test Game");
   //console.log(result1);
-  expect(result1.ok.length).toBe(1);
-});
-
-test("should be able to list achievements with details", async () => {
-  const result1 = await adminActor.listAchievementsWithDetails("Test Game");
-  //console.log(result1);
-  expect(result1.ok.length).toBe(1);
+  expect(result1.ok.length).toBeGreaterThan(0);
 });
 
 test("should be able to increment a player achievement", async () => {

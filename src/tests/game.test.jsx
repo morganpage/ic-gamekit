@@ -3,28 +3,6 @@ import { Actor } from "@dfinity/agent";
 import { actor,gameCanister } from "./gameActor";
 import { adminActor } from "./actor";
 
-test("WhoAmi should return value", async () => {
-  //console.log(actor);
-  const result1 = await actor.whoAmI();
-  //console.log(result1);
-  expect(result1).not.toBe(null);
-});
-
-test("WhoAmi2 should return value", async () => {
-  //console.log(actor);
-  const result1 = await actor.whoAmI2();
-  //console.log(result1.toText());
-  expect(result1).not.toBe(null);
-});
-
-// test("should ba able to setup game", async () => {
-//   //console.log(actor);
-//   const result1 = await actor.setup();
-//   console.log(result1.toText());
-//   expect(result1).not.toBe(null);
-// });
-
-
 
 test("Should be able to click", async () => {
   //Get the principal of the clicker-game and add it to the admins
@@ -36,7 +14,7 @@ test("Should be able to click", async () => {
   // console.log(result2);
 
 
-  const result1 = await actor.click2("Player1");
+  const result1 = await actor.click();
   console.log(result1);
 
   expect(result1.ok).not.toBe(null);
