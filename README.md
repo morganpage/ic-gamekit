@@ -1,5 +1,20 @@
 # The IC GameKit
 
+## Design and GameKit architecture
+
+The IC GameKit is drop-in solution for adding achievements, game and user data saves. The GameKit consists of 2 main canisters, a back-end canister that persists all the data associated with the achievements, game saves etc and the front-end that is a react web app that can be used to manage this data. Additionally a demo game canister is included that shows how a typical game canister can make use of the GameKit. All data relevant data is held in stable memory and hence will persist across upgrades.
+
+Multiple games can be created inside a single GameKit back-end canister hence it is envisaged that a game studio may only need one canister deployed to cater for all their games. Additionally, multiple admins can be added to the GameKit canister to enable easy management across a team. Each game that wants to utilise the GameKit should have its own canister and that canister should be added as an admin too.
+
+The front-end react web app enables you to:
+- Add / remove admins
+- Create a new game
+- Specify achievements associated with that game
+
+And soon will allow:
+- Save game data viewing
+- User data viewing
+
 ## Admins
 Only Admins can create games and add achievements. You can add a wallet prinicipal as an admin with:
 

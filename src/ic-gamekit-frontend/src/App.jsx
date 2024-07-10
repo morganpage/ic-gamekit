@@ -40,7 +40,7 @@ function App() {
       <img src="/logo2.svg" alt="DFINITY logo" />
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
         <div>
-        <h1 style={{textAlign:"center", marginTop:"10px" }}>The ICP Gamekit</h1>
+        <h1 style={{textAlign:"center", marginTop:"10px" }}>The IC GameKit</h1>
         {!identity ? <p style={{textAlign:"center", marginTop:"10px" }}>Login to get started</p>
         :
         <>
