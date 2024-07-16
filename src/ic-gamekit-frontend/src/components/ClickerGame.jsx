@@ -8,10 +8,12 @@ export function ClickerGame() {
   const [gameCanisterPrincipal, setGameCanisterPrincipal] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [playerAchievements, setPlayerAchievements] = useState([]);
+  const [availableGameRewards, setAvailableGameRewards] = useState({});
 
   useEffect(() => {
     if (!actor) return;
     refreshPlayerAchievements();
+    refreshAvailableGameRewards();
     actor.gameCanisterPrincipal().then((principal) => {
       setGameCanisterPrincipal(principal.toString());
     });
@@ -51,6 +53,19 @@ export function ClickerGame() {
     });
   }
 
+  const refreshAvailableGameRewards = async () => {
+    if (!actor) return;
+    actor.getAvailableGameRewards().then((rewards) => {
+      try {
+        //convert json string to json object
+        let json = JSON.parse(rewards);
+        setAvailableGameRewards(json);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
   return (
     <div className="panelCard">
       <h2>Clicker Game</h2>
@@ -68,6 +83,21 @@ export function ClickerGame() {
           </div>
         </div>
       ))}
+      <h4>Available Rewards</h4>
+      <div>
+          {Object.keys(availableGameRewards).map((key, index) => (
+            <div key={index} >
+              <div>
+                <p>{key}:</p>
+                {availableGameRewards[key].map((reward, index) => (
+                  <ul key={index} >
+                    <li>{reward}</li>
+                  </ul>
+                ))}
+              </div>
+            </div>
+          ))}
+      </div>
 
     </div>
   );

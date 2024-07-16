@@ -26,6 +26,13 @@ export function AchievementsEdit({ game }) {
     achievements[index][e.target.name]= e.target.value;
     achievements[index].updated = true;
     setAchievements([...achievements]);
+    console.log(achievements);
+  }
+  const handleChangeBoolean = (e,index) => {
+    achievements[index][e.target.name]= e.target.value === "true" ? true : false;
+    achievements[index].updated = true;
+    setAchievements([...achievements]);
+    console.log(achievements);
   }
 
   const createAchievement = async (e) => {
@@ -90,13 +97,13 @@ export function AchievementsEdit({ game }) {
                 <td><input type="text" name="description" value={achievement.description} onChange={(e) => handleChange(e,index)} style={{maxWidth:"120px"}} /></td>
                 <td><input type="text" id="maxProgress" value={achievement.maxProgress.toString()} onChange={(e) => handleMaxProgressChange(e,index)} style={{maxWidth:"70px"}} /></td>
                 <td>
-                  <select name="hidden" value={achievement.hidden} onChange={(e) => handleChange(e,index)}>
+                  <select name="hidden" value={achievement.hidden} onChange={(e) => handleChangeBoolean(e,index)}>
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
                 </td>
                 <td>
-                  <select name="secret" value={achievement.secret} onChange={(e) => handleChange(e,index)}>
+                  <select name="secret" value={achievement.secret} onChange={(e) => handleChangeBoolean(e,index)}>
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>

@@ -15,12 +15,25 @@ And soon will allow:
 - Save game data viewing
 - User data viewing
 
+### Game Specific Data
+Data can be stored against each game set up in the IC GameKit. For instance you may want to have a list of pets that can be randomly earned in the game and that you can add to easily without redeploying your game. You can set up multiple key/value pairs, both are held as strings so you can store your list of pets in json format and retrieve them in-game as needed. This would look like:
+```bash
+# Pets
+Key       Value
+rewards  { "pets" : ["Cat", "Dog", "Rabbit"] }
+```
+### Player Specific Data
+This is where you can store data about a player that is consistent across all your games. This will most likely be profile data like social links, display name etc.
+
+### Game Save Data
+Specific to a player within a game, game saves can be used to store the progress that a player has made in a particular game.
+
 ## Admins
 Only Admins can create games and add achievements. You can add a wallet prinicipal as an admin with:
 
 ```bash
 # Adds a new Admin
-dfx canister call ic-gamekit-backend addAdmin '(principal "27r6c-tnwx3-huyu5-panzd-njv6m-hvilt-ktcqz-d6zbv-kvozi-osfwu-hqe")'
+dfx canister call ic-gamekit-backend addAdmin '(principal "h7tkh-mxsdp-btty5-5wsux-7pgan-wxhty-cngil-y5yiv-pzhfs-rj4nd-bae")'
 ```
 The deploying identity automatically becomes an Admin.
 

@@ -10,6 +10,9 @@ shared ({caller}) actor class ICPGameKit() {
   type Game = Types.Game;
   type Achievement = Types.Achievement;
   type PlayerAchievement = Types.PlayerAchievement;
+  type Player = Types.Player;
+  type PlayerGameSave = Types.PlayerGameSave;
+  type KeyValue = Types.KeyValue;
 
   type Trie<K, V> = Trie.Trie<K, V>;
   type Key<K> = Trie.Key<K>;
@@ -22,15 +25,34 @@ shared ({caller}) actor class ICPGameKit() {
   private stable var achievements : Trie<Text, Achievement> = Trie.empty();
   private stable var playerAchievements : Trie<Text, PlayerAchievement> = Trie.empty();
   private stable var admins : List<Principal> = ?(caller, null);
+  private stable var players : Trie<Text, Player> = Trie.empty();
+  private stable var playerGameSaves : Trie<Text, PlayerGameSave> = Trie.empty();
 
   /////////////////
   // GAME //
   ///////////////
   public shared ({ caller }) func createGame(name : Text,description : Text) : async Result<Game,Text> {
     if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
-    let game : Game = { name = name; description = description; creator = caller; created = Time.now(); };
+    //let t1 = Trie.empty();
+    //let game : Game = { name = name; description = description; creator = caller; created = Time.now(); gameData = Trie.put(t1, key "key1", Text.equal, "{\"testNumber\": 0.1 , \"testString\":\"hello\" }").0};
+    let game : Game = { name = name; description = description; creator = caller; created = Time.now(); gameData = Trie.empty()};
     games := Trie.replace(games, key(name), Text.equal, ?game).0;
     return #ok(game);
+  };
+
+  public shared ({ caller }) func updateGame(name : Text,description : Text, gameData : Trie<Text, Text>) : async Result<Game,Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
+    switch (existingGame){
+      case (?v) {
+        let game : Game = { name = name; description = description; creator = v.creator; created = v.created; gameData = gameData};
+        games := Trie.replace(games, key(name), Text.equal, ?game).0;
+        return #ok(game);
+      };
+      case (_) {
+        return #err("Game does not exist!");
+      };
+    };
   };
 
   public query func getGame(name : Text) : async ?Game {
@@ -55,10 +77,51 @@ shared ({caller}) actor class ICPGameKit() {
     return Iter.toArray(Iter.map(Trie.iter(games), func (kv : (Text, Game)) : Game = kv.1))
   };
 
+  public query ({ caller }) func listGameData(name : Text) : async [KeyValue] {
+    switch (Trie.find(games, key(name), Text.equal)){
+      case (?v) {
+        return Iter.toArray(Iter.map(Trie.iter(v.gameData), func (kv : (Text, Text)) : KeyValue = { key = kv.0; value = kv.1 }));
+      };
+      case (_) {
+        return [];
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateGameData(name : Text, gameDataKey : Text, gameDataValue : Text) : async Result<KeyValue,Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
+    switch (existingGame){
+      case (?v) {
+        let game : Game = { name = name; description = v.description; creator = v.creator; created = v.created; gameData = Trie.put(v.gameData, key(gameDataKey), Text.equal, gameDataValue).0};
+        games := Trie.replace(games, key(name), Text.equal, ?game).0;
+        let kv : KeyValue = { key = gameDataKey; value = gameDataValue };
+        return #ok(kv);
+      };
+      case (_) {
+        return #err("Game does not exist!");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteGameData(name : Text, gameDataKey : Text) : async Result<(),Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
+    switch (existingGame){
+      case (?v) {
+        let game : Game = { name = name; description = v.description; creator = v.creator; created = v.created; gameData = Trie.replace(v.gameData, key(gameDataKey), Text.equal, null).0};
+        games := Trie.replace(games, key(name), Text.equal, ?game).0;
+        return #ok();
+      };
+      case (_) {
+        return #err("Game does not exist!");
+      };
+    };
+  };
+
   /////////////////
   // ACHIEVEMENT //
   ///////////////
-
   public shared ({ caller }) func createAchievement(gameName : Text, name : Text, description : Text,maxProgress : Nat, secret : Bool, hidden : Bool) : async Result<Achievement,Text> {
     if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     let existingGame : ?Game = Trie.find(games, key(gameName), Text.equal);
@@ -200,6 +263,56 @@ shared ({caller}) actor class ICPGameKit() {
   public shared ({ caller }) func deleteAllPlayerAchievements() : async Result<(),Text> {
     if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
     playerAchievements := Trie.empty();
+    return #ok();
+  };
+
+  /////////////////
+  // GAME SAVE //
+  ///////////////
+  public shared ({ caller }) func createGameSave(gameSaveName : Text, gameName : Text, playerId : Text,gameSaveData : Text) : async Result<PlayerGameSave,Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let id = playerId # "_" # gameName # "_" # gameSaveName;
+    let playerGameSave : PlayerGameSave = { id; gameSaveName; playerId; gameName; gameSaveData; created = Time.now()};
+    playerGameSaves := Trie.replace(playerGameSaves, key(id), Text.equal, ?playerGameSave).0;
+    return #ok(playerGameSave);
+    // let existingGameSave : ?PlayerGameSave = Trie.find(playerGameSaves, key(id), Text.equal);
+    // switch (existingGameSave){
+    //   case (?v) {
+    //     let playerGameSave : PlayerGameSave = { id; gameSaveName; playerId; gameName; gameSaveData = Trie.put(v.gameSaveData, key(gameSaveDataKey), Text.equal, gameSaveDataValue).0; created = Time.now()};
+    //     playerGameSaves := Trie.replace(playerGameSaves, key(gameSaveName), Text.equal, ?playerGameSave).0;
+    //     return #ok(playerGameSave);
+    //   };
+    //   case (_) {//New game save
+    //     let playerGameSave : PlayerGameSave = { id; gameSaveName; playerId; gameName; gameSaveData = Trie.put(Trie.empty(), key(gameSaveDataKey), Text.equal, gameSaveDataValue).0; created = Time.now()};
+    //     playerGameSaves := Trie.replace(playerGameSaves, key(gameSaveName), Text.equal, ?playerGameSave).0;
+    //     return #ok(playerGameSave);
+    //   };
+    // };
+  };
+
+  public query ({ caller }) func getGameSave(gameSaveName : Text, gameName : Text, playerId : Text) : async ?PlayerGameSave {
+    if(_isAdmin(caller) == false){return null;};
+    let id = playerId # "_" # gameName # "_" # gameSaveName;
+    let result = Trie.find(playerGameSaves, key(id), Text.equal);
+    return result;
+  };
+
+  public query ({ caller }) func listGameSaves(playerId : Text, gameName : Text) : async [PlayerGameSave] {
+    if(_isAdmin(caller) == false){return [];};
+    let trieOfOwnGameSaves = Trie.filter<Text, PlayerGameSave>(playerGameSaves, func (k, v) { v.playerId == playerId and v.gameName == gameName } );
+    return Iter.toArray(Iter.map(Trie.iter(trieOfOwnGameSaves), func (kv : (Text, PlayerGameSave)) : PlayerGameSave = kv.1));
+  };
+
+  public shared ({ caller }) func deleteGameSave(gameSaveName : Text, gameName : Text, playerId : Text) : async Result<(),Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let id = playerId # "_" # gameName # "_" # gameSaveName;
+    let existingGameSave : ?PlayerGameSave = Trie.find(playerGameSaves, key(id), Text.equal);
+    switch (existingGameSave){
+      case (?v) {
+        playerGameSaves := Trie.replace(playerGameSaves, key(id), Text.equal, null).0;
+      };
+      case (_) {};
+    };
     return #ok();
   };
 

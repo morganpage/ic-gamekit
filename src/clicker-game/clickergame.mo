@@ -2,7 +2,6 @@ import ICGameKitCanister "canister:ic-gamekit-backend";
 import Types "../ic-gamekit-backend/types";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
-import Order "mo:base/Order";
 import Nat "mo:base/Nat";
 import Array "mo:base/Array";
 
@@ -10,6 +9,8 @@ actor class ClickerGame() {
   type Result<Ok, Err> = Types.Result<Ok, Err>;
   type PlayerAchievement = Types.PlayerAchievement;
   type Achievement = Types.Achievement;
+  type KeyValue = Types.KeyValue;
+
 
   let gameName : Text = "Clicker Game";
   let gameDescription : Text = "A simple clicker game";
@@ -87,6 +88,19 @@ actor class ClickerGame() {
     let playerId = Principal.toText(caller);
     let playerAchievements = await ICGameKitCanister.listMyPlayerAchievements(playerId,gameName,true);
     return playerAchievements;
+  };
+
+  public func getAvailableGameRewards() : async Text {
+    let gameData : [KeyValue] = await ICGameKitCanister.listGameData(gameName);
+    let rewards = Array.find<KeyValue>(gameData, func (kv) = kv.key == "rewards");
+    return switch (rewards) {
+      case (?v) {
+        return v.value;
+      };
+      case (_) {
+        return "";
+      }
+    };
   };
 
 }

@@ -3,7 +3,7 @@ body {
   font-size: 1.5rem;
 }
 
-h1,h2,h3,h4,h5,h6 {
+h1,h2,h3,h4,h5,h6,ul {
   margin: 0;
 }
 
@@ -34,7 +34,8 @@ button[type="submit"] {
 }
 
 .panelCard h4 {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  margin-top: 10px;
 }
 
 .button {
@@ -53,9 +54,11 @@ button[type="submit"] {
   margin: 5px;
 }
 
-td:first-child {
+
+.table td:first-child {
   font-weight: bold;
 }
+
 th {
   text-align: left;
 }

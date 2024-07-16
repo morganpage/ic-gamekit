@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useActor } from "../ic/Actors";
+import { GameData } from "./GameData";
+import { PlayerGameSave } from "./PlayerGameSave";
 
 export function Games({ game, onGameChange }) {
   const [games, setGames] = useState([]);
@@ -68,7 +70,7 @@ export function Games({ game, onGameChange }) {
         <button className="deleteButton" onClick={e => deleteGame(game.name)}>Delete Game</button>
         {game &&
         <div>
-        <table>
+        <table className="table">
           <tbody>
               <tr>
                 <td>Name:</td>
@@ -81,6 +83,8 @@ export function Games({ game, onGameChange }) {
               </tbody>
         </table>
         </div>}
+        <GameData game={game} />
+        <PlayerGameSave game={game} />
       </div>
     </div>
   );
