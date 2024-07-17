@@ -4,16 +4,19 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Array "mo:base/Array";
+import Random "mo:base/Random";
 
 actor class ClickerGame() {
   type Result<Ok, Err> = Types.Result<Ok, Err>;
   type PlayerAchievement = Types.PlayerAchievement;
+  type PlayerGameSave = Types.PlayerGameSave;
   type Achievement = Types.Achievement;
   type KeyValue = Types.KeyValue;
 
 
   let gameName : Text = "Clicker Game";
   let gameDescription : Text = "A simple clicker game";
+  let gameSaveName : Text = "ClickSave"; //Just one default save for each player
   var isSetup : Bool = false;
 
   public query ({ caller }) func playerPrincipal() : async Principal {
@@ -24,7 +27,7 @@ actor class ClickerGame() {
     return await ICGameKitCanister.whoAmIFunc();
   };
 
-  //Called once to set up all the achievements
+  //Called once to set up all the achievements, rewards etc
   private func setup() : async () {
     let _gameSetup = await ICGameKitCanister.createGame(gameName, gameDescription);
     let _achievement1 = await ICGameKitCanister.createAchievement(gameName,"1 Click","1 Click", 1, false, false);
@@ -32,6 +35,15 @@ actor class ClickerGame() {
     let _achievement3 = await ICGameKitCanister.createAchievement(gameName,"100 Clicks","100 Clicks", 100, false, false);
     let _achievement4 = await ICGameKitCanister.createAchievement(gameName,"1000 Clicks","1000 Clicks", 1000, false, false);
     let _achievement5 = await ICGameKitCanister.createAchievement(gameName,"Click Counter","Click Counter", 1000000, true, false);
+    let _rewards = await ICGameKitCanister.updateGameData(gameName, "rewards", "
+    { \"pets\" :
+    [
+      { \"name\": \"Mouse\", \"url\" : \"https://roguefoxguild.mypinata.cloud/ipfs/QmXXba3DLd8y6DyM7rri1aQap5p8LTtcTaz7TLN4wS846B\" },
+      { \"name\": \"Cat\", \"url\" : \"https://roguefoxguild.mypinata.cloud/ipfs/QmNPhRKoQPppkQ6GxbiUniyyUkjY9Tht7Vyn1pvQ1DDEiY\" },
+      { \"name\": \"Dog\", \"url\" : \"https://roguefoxguild.mypinata.cloud/ipfs/QmecJRNGz44hvvMQLayQH6tDM2BQgYP7dDLGprMbd4o6Kt\" }
+    ]
+    }
+    ");
   };
 
   public shared ({ caller }) func click() : async Result<PlayerAchievement,Text> {
@@ -41,6 +53,7 @@ actor class ClickerGame() {
       await setup();
       isSetup := true;
     };
+    //Possible chance to get a reward
     let result = await ICGameKitCanister.incrementPlayerAchievement("Click Counter", playerId,1);
     switch (result) {
       case (#ok(playerAchievement)) {
@@ -62,6 +75,21 @@ actor class ClickerGame() {
       case (#err(_)) {
         return result;
       };
+    };
+  };
+
+  public func checkForReward() : async Nat8 {
+    //Check if player has earned a reward
+    let random = Random.Finite(await Random.blob());
+    switch (random.byte()) {
+      case (?b){
+        if(b < 128){
+          return 1;
+        };
+        return 0;
+      };
+      case (_)
+        return 0;
     };
   };
 
@@ -101,6 +129,11 @@ actor class ClickerGame() {
         return "";
       }
     };
+  };
+
+  public shared ({ caller }) func getGameRewards() : async Text {
+    let playerId = Principal.toText(caller);
+    return await ICGameKitCanister.getGameSaveData( gameSaveName,gameName, playerId);
   };
 
 }

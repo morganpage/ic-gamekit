@@ -7,11 +7,10 @@ import { useInternetIdentity } from "ic-use-internet-identity";
 export function PlayerGameSave({game}) {
   const { actor } = useActor();
   const [playerId, setPlayerId] = useState("");
-  const { login, loginStatus,identity,clear } = useInternetIdentity();
+  const { identity } = useInternetIdentity();
   const [gameSaveName, setGameSaveName] = useState("");
   const [gameSaveData, setGameSaveData] = useState("");
   const [updating, setUpdating] = useState(false);
-
   const [playerGameSaves, setPlayerGameSaves] = useState([]);
 
   useEffect(() => {
@@ -79,6 +78,7 @@ export function PlayerGameSave({game}) {
         </tr>
       {playerGameSaves?.map((playerGameSave,index) => (
         <tr key={index}>
+          <td>{playerGameSave.id}</td>
           <td>{playerGameSave.gameSaveName}</td>
           <td>{playerGameSave.gameSaveData}</td>
           <td><button className="deleteButton" onClick={() => deleteGameSaveData(playerGameSave.gameSaveName)}>x</button></td>

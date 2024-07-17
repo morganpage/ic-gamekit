@@ -20,7 +20,13 @@ Data can be stored against each game set up in the IC GameKit. For instance you 
 ```bash
 # Pets
 Key       Value
-rewards  { "pets" : ["Cat", "Dog", "Rabbit"] }
+rewards  { "pets" :
+[
+  { "name": "Mouse", "url" : "https://roguefoxguild.mypinata.cloud/ipfs/QmXXba3DLd8y6DyM7rri1aQap5p8LTtcTaz7TLN4wS846B" },
+  { "name": "Cat", "url" : "https://roguefoxguild.mypinata.cloud/ipfs/QmNPhRKoQPppkQ6GxbiUniyyUkjY9Tht7Vyn1pvQ1DDEiY" },
+  { "name": "Dog", "url" : "https://roguefoxguild.mypinata.cloud/ipfs/QmecJRNGz44hvvMQLayQH6tDM2BQgYP7dDLGprMbd4o6Kt" }
+]
+          }
 ```
 ### Player Specific Data
 This is where you can store data about a player that is consistent across all your games. This will most likely be profile data like social links, display name etc.
@@ -33,7 +39,7 @@ Only Admins can create games and add achievements. You can add a wallet prinicip
 
 ```bash
 # Adds a new Admin
-dfx canister call ic-gamekit-backend addAdmin '(principal "h7tkh-mxsdp-btty5-5wsux-7pgan-wxhty-cngil-y5yiv-pzhfs-rj4nd-bae")'
+dfx canister call ic-gamekit-backend addAdmin '(principal "ofjur-fbwgj-u5gzz-ce27f-glgmh-sw4wx-5kcf5-sxjcw-kh4k7-qrjqp-6qe")'
 ```
 The deploying identity automatically becomes an Admin.
 

@@ -40,20 +40,20 @@ shared ({caller}) actor class ICPGameKit() {
     return #ok(game);
   };
 
-  public shared ({ caller }) func updateGame(name : Text,description : Text, gameData : Trie<Text, Text>) : async Result<Game,Text> {
-    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
-    let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
-    switch (existingGame){
-      case (?v) {
-        let game : Game = { name = name; description = description; creator = v.creator; created = v.created; gameData = gameData};
-        games := Trie.replace(games, key(name), Text.equal, ?game).0;
-        return #ok(game);
-      };
-      case (_) {
-        return #err("Game does not exist!");
-      };
-    };
-  };
+  // public shared ({ caller }) func updateGame(name : Text,description : Text, gameData : Trie<Text, Text>) : async Result<Game,Text> {
+  //   if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+  //   let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
+  //   switch (existingGame){
+  //     case (?v) {
+  //       let game : Game = { name = name; description = description; creator = v.creator; created = v.created; gameData = gameData};
+  //       games := Trie.replace(games, key(name), Text.equal, ?game).0;
+  //       return #ok(game);
+  //     };
+  //     case (_) {
+  //       return #err("Game does not exist!");
+  //     };
+  //   };
+  // };
 
   public query func getGame(name : Text) : async ?Game {
     if(_isAdmin(caller) == false){return null;};
@@ -284,17 +284,26 @@ shared ({caller}) actor class ICPGameKit() {
     //   };
     //   case (_) {//New game save
     //     let playerGameSave : PlayerGameSave = { id; gameSaveName; playerId; gameName; gameSaveData = Trie.put(Trie.empty(), key(gameSaveDataKey), Text.equal, gameSaveDataValue).0; created = Time.now()};
-    //     playerGameSaves := Trie.replace(playerGameSaves, key(gameSaveName), Text.equal, ?playerGameSave).0;
+    //     playerGameSaves := Trie.replace(playerGameSaves, key    return result?.gameSaveData;ayerGameSave).0;
     //     return #ok(playerGameSave);
     //   };
     // };
   };
 
-  public query ({ caller }) func getGameSave(gameSaveName : Text, gameName : Text, playerId : Text) : async ?PlayerGameSave {
-    if(_isAdmin(caller) == false){return null;};
+  public query ({ caller }) func getGameSaveData(gameSaveName : Text, gameName : Text, playerId : Text) : async Text {
+    if(_isAdmin(caller) == false){return "";};
     let id = playerId # "_" # gameName # "_" # gameSaveName;
     let result = Trie.find(playerGameSaves, key(id), Text.equal);
-    return result;
+    switch (result){
+      case (?v) {
+        return v.gameSaveData;
+      };
+      case (_) {
+        return "";
+      };
+    };
+    //return result.gameSaveData;
+    //return result;
   };
 
   public query ({ caller }) func listGameSaves(playerId : Text, gameName : Text) : async [PlayerGameSave] {

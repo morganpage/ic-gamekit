@@ -9,11 +9,13 @@ export function ClickerGame() {
   const [playerId, setPlayerId] = useState("");
   const [playerAchievements, setPlayerAchievements] = useState([]);
   const [availableGameRewards, setAvailableGameRewards] = useState({});
+  const [gameRewards, setGameRewards] = useState([]);
 
   useEffect(() => {
     if (!actor) return;
     refreshPlayerAchievements();
     refreshAvailableGameRewards();
+    refreshGameRewards();
     actor.gameCanisterPrincipal().then((principal) => {
       setGameCanisterPrincipal(principal.toString());
     });
@@ -60,10 +62,33 @@ export function ClickerGame() {
         //convert json string to json object
         let json = JSON.parse(rewards);
         setAvailableGameRewards(json);
+        console.log(json);
       } catch (error) {
         console.log(error);
       }
     });
+  }
+
+  const refreshGameRewards = async () => {
+    if (!actor) return;
+    actor.getGameRewards().then((rewards) => {
+      try {
+        console.log(rewards);
+        //convert json string to json object
+        let json = JSON.parse(rewards);
+        setGameRewards(json.rewards);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
+  const rewardNameToUrl = (rewardName) => {
+    let filtered = availableGameRewards["Pets"].filter((a) => a.name === rewardName);
+    if(filtered.length > 0){
+      return filtered[0].url;
+    }
+    return "";
   }
 
   return (
@@ -75,6 +100,16 @@ export function ClickerGame() {
         <button type="submit">CLICK</button>
         <p>Click Count: {clickCount}</p>
       </form>
+      <h4>Rewards</h4>
+      <div className="rewards">
+        {gameRewards?.map((reward, index) => (
+          <div key={index} >
+            <div>
+              <img src={rewardNameToUrl(reward)} alt="reward" />
+            </div>
+          </div>
+        ))}
+      </div>
       <h4>Unlocked Achievements</h4>
       {playerAchievements?.map((achievement, index) => (
         <div key={index} >
@@ -91,7 +126,7 @@ export function ClickerGame() {
                 <p>{key}:</p>
                 {availableGameRewards[key].map((reward, index) => (
                   <ul key={index} >
-                    <li>{reward}</li>
+                    <li>{reward.name}</li>
                   </ul>
                 ))}
               </div>

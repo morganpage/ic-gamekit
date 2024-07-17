@@ -38,6 +38,15 @@ button[type="submit"] {
   margin-top: 10px;
 }
 
+.rewards {
+  display: flex;
+}
+
+.rewards img {
+  max-width: 100px;
+  margin: 0;
+}
+
 .button {
   border: 1px solid black;
   border-radius: 5px;
