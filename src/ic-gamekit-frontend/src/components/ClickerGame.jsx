@@ -7,15 +7,18 @@ export function ClickerGame() {
   const [clickCount, setClickCount] = useState(0);
   const [gameCanisterPrincipal, setGameCanisterPrincipal] = useState("");
   const [playerId, setPlayerId] = useState("");
+  const [playerProfileName, setPlayerProfileName] = useState("");
   const [playerAchievements, setPlayerAchievements] = useState([]);
   const [availableGameRewards, setAvailableGameRewards] = useState({});
   const [gameRewards, setGameRewards] = useState([]);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     if (!actor) return;
     refreshPlayerAchievements();
     refreshAvailableGameRewards();
     refreshGameRewards();
+    refreshPlayerProfile();
     actor.gameCanisterPrincipal().then((principal) => {
       setGameCanisterPrincipal(principal.toString());
     });
@@ -31,13 +34,13 @@ export function ClickerGame() {
     e.preventDefault();
     try {
       actor.click().then((a) => {
-        console.log(a);
         if(a.err){
           alert(a.err);
           return;
         }
         setClickCount(parseInt(a.ok.progress));
         refreshPlayerAchievements();
+        refreshGameRewards();
       });
     } catch (error) {
       alert(error.message);
@@ -55,6 +58,36 @@ export function ClickerGame() {
     });
   }
 
+  const refreshPlayerProfile = async () => {
+    if (!actor) return;
+    actor.getProfileName().then((profile) => {
+      if(profile.err){
+        console.log(profile.err);
+        setPlayerProfileName("");
+        return;
+      }
+      setPlayerProfileName(profile.ok.value);
+    });
+  }
+
+  const updatePlayerProfile = async () => {
+    if (!actor) return;
+    setUpdating(true);
+    try {
+      actor.updateProfileName(playerProfileName).then((a) => {
+        setUpdating(false);
+        if(a.err){
+          alert(a.err);
+          return;
+        }
+        refreshPlayerProfile();
+      }
+      );
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
   const refreshAvailableGameRewards = async () => {
     if (!actor) return;
     actor.getAvailableGameRewards().then((rewards) => {
@@ -62,7 +95,6 @@ export function ClickerGame() {
         //convert json string to json object
         let json = JSON.parse(rewards);
         setAvailableGameRewards(json);
-        console.log(json);
       } catch (error) {
         console.log(error);
       }
@@ -73,8 +105,11 @@ export function ClickerGame() {
     if (!actor) return;
     actor.getGameRewards().then((rewards) => {
       try {
-        console.log(rewards);
         //convert json string to json object
+        if(rewards === ""){
+          setGameRewards([]);
+          return;
+        }
         let json = JSON.parse(rewards);
         setGameRewards(json.rewards);
       } catch (error) {
@@ -84,11 +119,17 @@ export function ClickerGame() {
   }
 
   const rewardNameToUrl = (rewardName) => {
-    let filtered = availableGameRewards["Pets"].filter((a) => a.name === rewardName);
-    if(filtered.length > 0){
-      return filtered[0].url;
+    if(!rewardName || !availableGameRewards || !availableGameRewards["pets"]) return "";
+    try {
+      let filtered = availableGameRewards["pets"].filter((a) => a.name === rewardName);
+      if(filtered.length > 0){
+        return filtered[0].url;
+      }
+      return "";
+    } catch (error) {
+      console.log(error);
+      return "";
     }
-    return "";
   }
 
   return (
@@ -100,6 +141,12 @@ export function ClickerGame() {
         <button type="submit">CLICK</button>
         <p>Click Count: {clickCount}</p>
       </form>
+      <h4>Player Profile</h4>
+      <p>id: {playerId}</p>
+      <label style={{display:"flex",gap:"10px"}}>Profile Name:
+      <input type="text" name="description" value={playerProfileName} onChange={(e) => setPlayerProfileName(e.target.value)} style={{minWidth:"190px"}} />
+      <button className="button1" onClick={updatePlayerProfile} disabled={updating}>update</button>
+      </label>
       <h4>Rewards</h4>
       <div className="rewards">
         {gameRewards?.map((reward, index) => (
@@ -112,11 +159,11 @@ export function ClickerGame() {
       </div>
       <h4>Unlocked Achievements</h4>
       {playerAchievements?.map((achievement, index) => (
-        <div key={index} >
+        <ul key={index} >
           <div>
-            <p>{achievement.achievementName}</p>
+            <li>{achievement.achievementName}</li>
           </div>
-        </div>
+        </ul>
       ))}
       <h4>Available Rewards</h4>
       <div>

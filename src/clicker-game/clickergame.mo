@@ -5,6 +5,9 @@ import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Array "mo:base/Array";
 import Random "mo:base/Random";
+import Nat8 "mo:base/Nat8";
+import Result "mo:base/Result";
+import {JSON} "mo:serde";
 
 actor class ClickerGame() {
   type Result<Ok, Err> = Types.Result<Ok, Err>;
@@ -12,6 +15,16 @@ actor class ClickerGame() {
   type PlayerGameSave = Types.PlayerGameSave;
   type Achievement = Types.Achievement;
   type KeyValue = Types.KeyValue;
+  type GameSave = {
+    rewards : [Text];
+  };
+  type Pet = {
+    name : Text;
+    url : Text;
+  };
+  type GameRewards = {
+    pets : [Pet];
+  };
 
 
   let gameName : Text = "Clicker Game";
@@ -58,6 +71,11 @@ actor class ClickerGame() {
     switch (result) {
       case (#ok(playerAchievement)) {
         let counter : Nat = playerAchievement.progress;
+        //Check if player has earned a reward
+        let reward = await checkForReward();
+        if(reward != ""){
+          let _ = await addReward(playerId,reward);
+        };
         if(counter == 1){
           return await ICGameKitCanister.incrementPlayerAchievement("1 Click", playerId,1);
         };
@@ -78,20 +96,48 @@ actor class ClickerGame() {
     };
   };
 
-  public func checkForReward() : async Nat8 {
+  public func checkForReward() : async Text {
     //Check if player has earned a reward
     let random = Random.Finite(await Random.blob());
     switch (random.byte()) {
       case (?b){
-        if(b < 128){
-          return 1;
+        if(b < 10){//b's range is 0-255 so if 10 or less then give a reward, roughly 4% chance of reward
+          // Get all existing rewards
+          let bNat : Nat = Nat8.toNat(b);
+          return await getRandomReward(bNat);
         };
-        return 0;
+        return "";
       };
       case (_)
-        return 0;
+        return "";
     };
   };
+
+  private func getRandomReward(randomNumber : Nat) : async Text {
+    let jsonText = await getAvailableGameRewards();
+    let result = JSON.fromText(jsonText, null);
+    switch (result) {
+      case (#ok(blob)) {
+        let gameRewards : ?GameRewards = from_candid(blob);
+        switch (gameRewards) {
+          case (?gameRewards) {
+            let numberOfPets = gameRewards.pets.size();
+            //Choose a random reward
+            let index = randomNumber % numberOfPets;
+            let randomPet = gameRewards.pets.get(index);
+            return randomPet.name;
+          };
+          case (_) {
+            return "";
+          };
+        };
+      };
+      case (#err(_)) {
+        return "";
+      };
+    };
+  };
+
 
   // Get Current number of clicks - held in Click Counter achievement
   public shared ({ caller }) func getClicks() : async Nat {
@@ -131,9 +177,56 @@ actor class ClickerGame() {
     };
   };
 
+  //// Player Profile Functions
+  public shared ({ caller }) func updateProfileName(profileName : Text) :  async Result<KeyValue,Text> {
+    let playerId = Principal.toText(caller);
+    return await ICGameKitCanister.updatePlayerData(playerId,"profileName",profileName);
+  };
+
+  public shared ({ caller }) func getProfileName() : async Result<KeyValue,Text> {
+    let playerId = Principal.toText(caller);
+    return await ICGameKitCanister.getPlayerData(playerId,"profileName");
+  };
+
   public shared ({ caller }) func getGameRewards() : async Text {
     let playerId = Principal.toText(caller);
     return await ICGameKitCanister.getGameSaveData( gameSaveName,gameName, playerId);
   };
 
+  private func addReward(playerId : Text,reward : Text) : async Bool {
+    let gameSaveData = await ICGameKitCanister.getGameSaveData( gameSaveName,gameName, playerId);
+    switch (JSON.fromText(gameSaveData, null)) {
+      case (#ok(blob)) {
+        let gameSave : ?GameSave = from_candid(blob);
+        switch (gameSave) {
+          case (?gameSave) {
+            //Add the new reward
+            return await createGameSaveFromRewards(playerId,Array.append(gameSave.rewards,[reward]));
+          };
+          case (_) {
+            return false;
+          };
+      };
+      };
+      case (#err(_)) {
+        //No existing game data so add the first reward
+        return await createGameSaveFromRewards(playerId,[reward]);
+      };
+    };
+  };
+
+  private func createGameSaveFromRewards(playerId : Text,rewards : [Text]) : async Bool {
+    let newGameSave : GameSave = { rewards = rewards };
+    let blob = to_candid(newGameSave);
+    let json_result = JSON.toText(blob,["rewards"],null);
+    return switch (json_result) {
+      case (#ok(json_result)) {
+        let _ = await ICGameKitCanister.createGameSave(gameSaveName, gameName, playerId, json_result);
+        return true;
+      };
+      case (#err(_)) {
+        return false;
+      };
+    };
+  };
 }

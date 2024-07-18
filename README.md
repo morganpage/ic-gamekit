@@ -43,6 +43,15 @@ dfx canister call ic-gamekit-backend addAdmin '(principal "ofjur-fbwgj-u5gzz-ce2
 ```
 The deploying identity automatically becomes an Admin.
 
+## Installing the project locally
+
+```bash
+#Install mops (npm i -g ic-mops) , the motoko package manager and install dependencies with
+mops install
+#Install all other dependencies with
+npm install
+```
+
 ## Running the project locally
 
 If you want to test your project locally, you can use the following commands:
