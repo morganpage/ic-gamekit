@@ -39,16 +39,18 @@ Only Admins can create games and add achievements. You can add a wallet prinicip
 
 ```bash
 # Adds a new Admin
-dfx canister call ic-gamekit-backend addAdmin '(principal "ofjur-fbwgj-u5gzz-ce27f-glgmh-sw4wx-5kcf5-sxjcw-kh4k7-qrjqp-6qe")'
+dfx canister call ic-gamekit-backend addAdmin '(principal "ns7tc-nfpjp-wggqg-o5bag-feolr-dlb5q-3zcdz-vcavb-hyw2u-ypiwj-7ae")'
 ```
 The deploying identity automatically becomes an Admin.
 
 ## Installing the project locally
 
+Install dfx by following [these](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/) instructions.
+
 ```bash
-#Install mops (npm i -g ic-mops) , the motoko package manager and install dependencies with
+# Install mops (npm i -g ic-mops) , the motoko package manager and install dependencies with
 mops install
-#Install all other dependencies with
+# Install all other dependencies with
 npm install
 ```
 
