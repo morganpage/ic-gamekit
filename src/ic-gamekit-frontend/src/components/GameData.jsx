@@ -57,6 +57,7 @@ export function GameData({game}) {
     <div className="panelCard">
       <h3>Game Specific Data</h3>
       <table>
+      <thead>
         <tr>
           <th>Key</th>
           <th>Value</th>
@@ -66,6 +67,8 @@ export function GameData({game}) {
           <td><input type="text" id="value" placeholder="Add a json data" value={value} onChange={e => setValue(e.target.value)}/></td>
           <td><button onClick={addGameData} disabled={updating}>+</button></td>
         </tr>
+        </thead>
+        <tbody>
       {gameData?.map((data,index) => (
         <tr key={index}>
           <td>{data.key}</td>
@@ -75,6 +78,7 @@ export function GameData({game}) {
           </tr>
       ))
       }
+      </tbody>
       </table>
       </div>
   );

@@ -67,6 +67,7 @@ export function PlayerGameSave({game}) {
       <h3>Game Saves for player:</h3>
       <p>{playerId}</p>
       <table>
+        <thead>
         <tr>
           <th>Save Name</th>
           <th>Save Data</th>
@@ -76,6 +77,8 @@ export function PlayerGameSave({game}) {
           <td><input type="text" id="gameSaveData" placeholder="Save json data" value={gameSaveData} onChange={e => setGameSaveData(e.target.value)}/></td>
           <td><button onClick={createGameSave} disabled={updating}>+</button></td>
         </tr>
+      </thead>
+      <tbody>
       {playerGameSaves?.map((playerGameSave,index) => (
         <tr key={index}>
           <td>{playerGameSave.id}</td>
@@ -84,6 +87,7 @@ export function PlayerGameSave({game}) {
           <td><button className="deleteButton" onClick={() => deleteGameSaveData(playerGameSave.gameSaveName)}>x</button></td>
         </tr>
       ))}
+      </tbody>
       </table>
     </div>
   );

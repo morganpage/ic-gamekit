@@ -8,6 +8,7 @@ import { AchievementsEdit } from './components/AchievementsEdit';
 import { Player } from './components/Player';
 import { ClickerGame } from './components/ClickerGame';
 import { useInternetIdentity } from "ic-use-internet-identity";
+import { PlayerData } from './components/PlayerData';
 
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
         {isAdmin && <button className='button' onClick={() => setShowAdminPanels(!showAdminPanels)}>{showAdminPanels ? "Hide Admin Panels":"Show Admin Panels"}</button>}
         { showAdminPanels && <>
           {isAdmin && <Admins />}
+          {isAdmin && <PlayerData />}
           {isAdmin && <Games game={game} onGameChange={setGame} />}
           {/* <AchievementAdd game={game} onGameChange={setGame}/> */}
           {isAdmin && <AchievementsEdit game={game} />}

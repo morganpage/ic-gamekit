@@ -346,6 +346,33 @@ shared ({caller}) actor class ICPGameKit() {
       };
     };
   };
+
+  public query ({ caller }) func listPlayerData(playerId : Text) : async [KeyValue] {
+    switch (Trie.find(players, key(playerId), Text.equal)){
+      case (?v) {
+        return Iter.toArray(Iter.map(Trie.iter(v.playerData), func (kv : (Text, Text)) : KeyValue = { key = kv.0; value = kv.1 }));
+      };
+      case (_) {
+        return [];
+      };
+    };
+  };
+
+  public shared ({ caller }) func deletePlayerData(playerId : Text, playerDataKey : Text) : async Result<(),Text> {
+    if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
+    let existingPlayer : ?Player = Trie.find(players, key(playerId), Text.equal);
+    switch (existingPlayer){
+      case (?v) {
+        let player : Player = { id = playerId; created = v.created; playerData = Trie.replace(v.playerData, key(playerDataKey), Text.equal, null).0};
+        players := Trie.replace(players, key(playerId), Text.equal, ?player).0;
+        return #ok();
+      };
+      case (_) {
+        return #err("Player does not exist!");
+      };
+    };
+  };
+
   /////////////////
   // ADMIN //
   ///////////////
