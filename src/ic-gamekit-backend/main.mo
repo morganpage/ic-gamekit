@@ -32,28 +32,22 @@ shared ({caller}) actor class ICPGameKit() {
   // GAME //
   ///////////////
   public shared ({ caller }) func createGame(name : Text,description : Text) : async Result<Game,Text> {
+    //Creates a new game, however if an existing game, it will update the description
     if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
-    //let t1 = Trie.empty();
-    //let game : Game = { name = name; description = description; creator = caller; created = Time.now(); gameData = Trie.put(t1, key "key1", Text.equal, "{\"testNumber\": 0.1 , \"testString\":\"hello\" }").0};
-    let game : Game = { name = name; description = description; creator = caller; created = Time.now(); gameData = Trie.empty()};
-    games := Trie.replace(games, key(name), Text.equal, ?game).0;
-    return #ok(game);
+    let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
+    switch (existingGame){
+      case (?v) {
+        let game : Game = { name = name; description = description; creator = v.creator; created = v.created; gameData = v.gameData};
+        games := Trie.replace(games, key(name), Text.equal, ?game).0;
+        return #ok(game);
+      };
+      case (_) {
+        let game : Game = { name = name; description = description; creator = caller; created = Time.now(); gameData = Trie.empty()};
+        games := Trie.replace(games, key(name), Text.equal, ?game).0;
+        return #ok(game);
+      };
+    };
   };
-
-  // public shared ({ caller }) func updateGame(name : Text,description : Text, gameData : Trie<Text, Text>) : async Result<Game,Text> {
-  //   if(_isAdmin(caller) == false){return #err("You are not an admin! - " # Principal.toText(caller));};
-  //   let existingGame : ?Game = Trie.find(games, key(name), Text.equal);
-  //   switch (existingGame){
-  //     case (?v) {
-  //       let game : Game = { name = name; description = description; creator = v.creator; created = v.created; gameData = gameData};
-  //       games := Trie.replace(games, key(name), Text.equal, ?game).0;
-  //       return #ok(game);
-  //     };
-  //     case (_) {
-  //       return #err("Game does not exist!");
-  //     };
-  //   };
-  // };
 
   public query func getGame(name : Text) : async ?Game {
     if(_isAdmin(caller) == false){return null;};
@@ -291,7 +285,7 @@ shared ({caller}) actor class ICPGameKit() {
     };
   };
 
-  public query ({ caller }) func listGameSaves(playerId : Text, gameName : Text) : async [PlayerGameSave] {
+  public query ({ caller }) func listGameSaves( gameName : Text,playerId : Text) : async [PlayerGameSave] {
     if(_isAdmin(caller) == false){return [];};
     let trieOfOwnGameSaves = Trie.filter<Text, PlayerGameSave>(playerGameSaves, func (k, v) { v.playerId == playerId and v.gameName == gameName } );
     return Iter.toArray(Iter.map(Trie.iter(trieOfOwnGameSaves), func (kv : (Text, PlayerGameSave)) : PlayerGameSave = kv.1));

@@ -28,7 +28,7 @@ export function PlayerGameSave({game}) {
     if(!actor) return;
     if(!playerId) return;
     if(!game || !game.name) return;
-    actor.listGameSaves(playerId,game.name).then((saves) => {
+    actor.listGameSaves(game.name,playerId).then((saves) => {
       setPlayerGameSaves(saves);
     });
   }

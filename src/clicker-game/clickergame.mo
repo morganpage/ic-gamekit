@@ -40,6 +40,11 @@ actor class ClickerGame() {
     return await ICGameKitCanister.whoAmIFunc();
   };
 
+  //Check if the game canister has been set up correctly as an admin
+  public shared func isGameCanisterAdmin() : async Bool {
+    return await ICGameKitCanister.isAdmin();
+  };
+
   //Called once to set up all the achievements, rewards etc
   private func setup() : async () {
     let _gameSetup = await ICGameKitCanister.createGame(gameName, gameDescription);
@@ -187,6 +192,7 @@ actor class ClickerGame() {
     let playerId = Principal.toText(caller);
     return await ICGameKitCanister.getPlayerData(playerId,"profileName");
   };
+  //////
 
   public shared ({ caller }) func getGameRewards() : async Text {
     let playerId = Principal.toText(caller);
