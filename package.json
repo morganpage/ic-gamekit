@@ -13,7 +13,8 @@
   },
   "type": "module",
   "workspaces": [
-    "src/ic-gamekit-frontend"
+    "src/ic-gamekit-frontend",
+    "src/unity-login"
   ],
   "devDependencies": {
     "@dfinity/identity-secp256k1": "^1.4.0",

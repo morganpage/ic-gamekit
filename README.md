@@ -10,8 +10,6 @@ The front-end react web app enables you to:
 - Add / remove admins
 - Create a new game
 - Specify achievements associated with that game
-
-And soon will allow:
 - Save game data viewing
 - User data viewing
 
@@ -98,7 +96,8 @@ Then run the tests with:
 npm run test
 ```
 
-
+### Unity Login - The unity-login folder
+To enable logging in to a Unity game via Internet Identity, I have included an example login page. A Unity application can load this login page into an iframe and when the login process is complete, this page will create a delegation chain that it passes to the Unity application via a postMessage. To enable testing in the Unity Editor, this page also supports sending the delegation chain via websockets. An example Unity game that utilises this can be found [here](https://github.com/morganpage/ic-clicker-game). For more information on delegtaion chains checkout the official ICP documentation [here](https://internetcomputer.org/docs/current/references/ii-spec#introduction).
 
 ### Note on frontend environment variables
 
