@@ -62,14 +62,14 @@ actor class ClickerGame() {
     ]
     }
     ");
+    
   };
 
   public shared ({ caller }) func click() : async Result<PlayerAchievement,Text> {
     let playerId = Principal.toText(caller);
-    //isSetup := false;
     if(isSetup == false){
       await setup();
-      isSetup := true;
+      isSetup := await isGameCanisterAdmin();//Setup will fail otherwise
     };
     //Possible chance to get a reward
     let result = await ICGameKitCanister.incrementPlayerAchievement("Click Counter", playerId,1);

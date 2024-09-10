@@ -60,9 +60,13 @@ If you want to test your project locally, you can use the following commands:
 # Starts the replica, running in the background
 dfx start --background
 
+# Build, to be on the safe side ;-), deploy does this anyway
+dfx build
+
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy
 ```
+If you get an 'assetstorage.did doesn't exist' just retry the deploy and it should work (or do the build step first)
 
 Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
 
@@ -82,6 +86,13 @@ npm start
 
 Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
 
+## Running locally - Continued...
+I would suggest running the ic-gamekit-frontend first, so click on either link listed after you do a dfx deploy. You should get a browser window up that shows the IC GameKit with a Clicker Game panel. If at this point your click on the Click button you will get a message saying you are not an admin and it will handily show the Game Canister Principal that you need to copy and paste into the following command:
+```bash
+dfx canister call ic-gamekit-backend addAdmin '(principal "Enter-the-Game-Canister-Principal Here")'
+```
+Now when you hit the Click button it should increment and start unlocking achievements!
+
 
 # Testing
 You will need to run the following command to add the test Admin user before running the tests.
@@ -98,6 +109,51 @@ npm run test
 
 ### Unity Login - The unity-login folder
 To enable logging in to a Unity game via Internet Identity, I have included an example login page. A Unity application can load this login page into an iframe and when the login process is complete, this page will create a delegation chain that it passes to the Unity application via a postMessage. To enable testing in the Unity Editor, this page also supports sending the delegation chain via websockets. An example Unity game that utilises this can be found [here](https://github.com/morganpage/ic-clicker-game). For more information on delegtaion chains checkout the official ICP documentation [here](https://internetcomputer.org/docs/current/references/ii-spec#introduction).
+
+
+### Writing your own game contract
+When you have finished checking out the example clicker game you will probably want to start creating your own game contract. This is general process for doing this...
+Create a new folder inside the src folder (something like mycool-game!). Inside that folder, create a file (something like mycoolgame.mo). Import the IC GameKit canister with:
+```bash
+import ICGameKitCanister "canister:ic-gamekit-backend";
+```
+Then amend dfx.json, adding the following
+```bash
+{
+  "canisters": {
+    "mycool-game": {
+      "dependencies": [
+        "ic-gamekit-backend"
+      ],
+      "main": "src/mycool-game/mycoolgame.mo",
+      "type": "motoko"
+    },
+```
+Then run (only need to do this once):
+```bash
+dfx canister create mycool-game
+```
+Then try building your canister with:
+```bash
+dfx build mycool-game
+```
+### Useful IC GameKit Functions
+Although you can add games, achievements etc through the ic-gamekit-frontend. The preferred way is doing a one-off setup of your game in your smart contract. Here is some example code to get you going:
+```js
+await ICGameKitCanister.createGame("Your game name", "Your game description");
+await ICGameKitCanister.createAchievement("Your game name","Achievement Name","Description", 1, false, false);
+//The 4th param is the maxProgress, 1 in this case, a single increment will earn it!
+//Last 2 bool params are secret, hidden
+//secret = You can omit to show these to a player to keep them... secret
+//hidden = You can have achievements hidden until they are ready to go live
+```
+Now that you have created a game and an achievement, during gameplay you can unlock an achievement by:
+```js
+await ICGameKitCanister.incrementPlayerAchievement("Achievement Name", "playerId",1);
+//The 3rd param is how much to increment by, in this case 1, hence progress becomes progress+1 
+//If progress = maxProgress the achievement is considered earned!
+```
+
 
 ### Note on frontend environment variables
 
