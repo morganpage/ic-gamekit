@@ -18,12 +18,12 @@ img {
   margin: auto;
 }
 
-button[type="submit"] {
-  border: 1px solid black;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin: 0px 5px;
-}
+// button[type="submit"] {
+//   border: 1px solid black;
+//   border-radius: 5px;
+//   padding: 5px 10px;
+//   margin: 0px 5px;
+// }
 
 .panelCard {
   border: 1px solid black;
@@ -53,6 +53,14 @@ button[type="submit"] {
   border-radius: 5px;
   padding: 5px 10px;
   margin: 5px;
+}
+
+.button:hover {
+  background-color: #ddd;
+}
+.button:active {
+  background-color: #999;
+  color: #fff;
 }
 
 .deleteButton {

@@ -138,7 +138,7 @@ export function ClickerGame() {
       <p>Game Canister Principal (must be an admin): {gameCanisterPrincipal}</p>
       <p>Player Id: {playerId}</p>
       <form onSubmit={clickHandler}>
-        <button type="submit">CLICK</button>
+        <button className="button" type="submit">CLICK</button>
         <p>Click Count: {clickCount}</p>
       </form>
       <h4>Player Profile</h4>
