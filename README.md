@@ -33,7 +33,7 @@ This is where you can store data about a player that is consistent across all yo
 Specific to a player within a game, game saves can be used to store the progress that a player has made in a particular game.
 
 ## Admins
-Only Admins can create games and add achievements. You can add a wallet prinicipal as an admin with:
+Only Admins can create games and add achievements. You can add a wallet principal as an admin with:
 
 ```bash
 # Adds a new Admin
@@ -149,11 +149,25 @@ await ICGameKitCanister.createAchievement("Your game name","Achievement Name","D
 ```
 Now that you have created a game and an achievement, during gameplay you can unlock an achievement by:
 ```js
-await ICGameKitCanister.incrementPlayerAchievement("Achievement Name", "playerId",1);
+await ICGameKitCanister.incrementPlayerAchievement("Achievement Name", "playerId here",1);
 //The 3rd param is how much to increment by, in this case 1, hence progress becomes progress+1 
 //If progress = maxProgress the achievement is considered earned!
 ```
+Updating player profile data is nice and easy:
+```js
+await ICGameKitCanister.updatePlayerData("playerId here", "profileName","Bob");
+await ICGameKitCanister.updatePlayerData("playerId here", "profileBio","I'm a game dev!");
+```
+And saving game data is straight forward too:
+```js
+await ICGameKitCanister.createGameSave("Save01","Your game name","playerId here", "Game data here");
+```
+You will probably want to save your game data in JSON format which is nice and flexible. See the [clickergame.mo](https://github.com/morganpage/ic-gamekit/blob/main/src/clicker-game/clickergame.mo) code for an example of how this can be done.
 
+Another useful feature of the IC GameKit is saving game specific data. This can be useful for adding new features to a game without redeploying the game. In the click game example, the rewards are held this way so that additional rewards can easily be added after deployment.
+```js
+await ICGameKitCanister.updateGameData("Your game name","Game data key","Game data value");
+```
 
 ### Note on frontend environment variables
 
